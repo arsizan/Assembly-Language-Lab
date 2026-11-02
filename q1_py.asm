@@ -43,3 +43,59 @@ SKIP_UPDATE:
     INT 21H
 MAIN ENDP
 END MAIN
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+ARR DB 5 DUP(?)
+MSG DB 'Enter 5 digits (0-9): $'
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    LEA DX, MSG
+    MOV AH, 09H
+    INT 21H
+
+    LEA SI, ARR
+    MOV CX, 5
+
+INPUT_LOOP:
+    MOV AH, 01H       ; একটি character input
+    INT 21H           ; character আসবে AL-এ
+
+    CMP AL, '0'       ; digit না হলে বাদ
+    JB INPUT_LOOP
+    CMP AL, '9'
+    JA INPUT_LOOP
+
+    SUB AL, '0'       ; ASCII digit-কে সংখ্যায় বদলানো
+    MOV [SI], AL      ; array-তে রাখা
+    INC SI
+    LOOP INPUT_LOOP
+
+    MOV AH, 4CH
+    INT 21H
+MAIN ENDP
+END MAIN

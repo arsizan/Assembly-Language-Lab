@@ -4,36 +4,61 @@
 
 
 .MODEL SMALL
+.STACK 100H
 .DATA
-    N DB 4             ; Number jetaar factorial ber korbo
-    FACT_RES DB ?      ; Result save korar jonno
-
+    N   DB 5
+    RES DW ?
 .CODE
 MAIN PROC
     MOV AX, @DATA
     MOV DS, AX
 
-    MOV CL, N          ; CL = 4 (Loop counter hisabe use korbo)
-    MOV CH, 0          ; CX = 0004H
-    
-    CALL FACT_PROC     ; Factorial ber korar procedure ta call korlam
-    
-    MOV FACT_RES, AL   ; Procedure theke AL e result asbe, seta save korlam
+    MOV CL, N
+    MOV CH, 0
+    CALL FACT
+    MOV RES, AX
+
+    MOV AX, RES
+    CALL PRINTNUM       ; prints 120
 
     MOV AH, 4CH
     INT 21H
 MAIN ENDP
 
-; --- User Defined Procedure ---
-FACT_PROC PROC
-    PUSH CX            ; Stack e CX er man (4) save korlam (Question er requirement!)
-    MOV AX, 1          ; Multiplication er jonno initial man 1 hote hoy (0 hole gunfol 0 hobe)
+FACT PROC
+    PUSH CX
+    MOV AX, 1
+F1:
+    MUL CX
+    LOOP F1
+    POP CX
+    RET
+FACT ENDP
 
-FACT_LOOP:
-    MUL CX             ; AX = AX * CX (Prothome 1*4, tarpor 4*3, 12*2, 24*1)
-    LOOP FACT_LOOP     ; CX komabe ar loop korbe jotokhon na CX = 0 hoy
-
-    POP CX             ; Kaj sheshe Stack theke CX er ager man ferot anlam
-    RET                ; Main function e ferot (return) jao
-FACT_PROC ENDP
+PRINTNUM PROC
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
+    MOV BX, 10
+    MOV CX, 0           ; digit count
+DIGIT:
+    MOV DX, 0           ; DX:AX / 10
+    DIV BX              ; AX = quotient, DX = remainder
+    PUSH DX             ; save digit
+    INC CX
+    CMP AX, 0
+    JNE DIGIT
+SHOW:
+    POP DX              ; digits come out in correct order
+    ADD DL, 30H
+    MOV AH, 2
+    INT 21H
+    LOOP SHOW
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+    RET
+PRINTNUM ENDP
 END MAIN
